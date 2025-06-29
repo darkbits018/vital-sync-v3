@@ -693,6 +693,8 @@ function App() {
         title={getTabTitle()}
         user={user}
         onProfileClick={() => setActiveTab('profile')}
+        showInstallButton={showInstallButton}
+        onInstallClick={handleInstallClick}
       />
       
       <main className="pb-0">
@@ -709,19 +711,6 @@ function App() {
         notifications={notifications}
         onClose={removeNotification}
       />
-
-      {/* Install App Button */}
-      {showInstallButton && (
-        <div className="fixed bottom-20 left-0 right-0 flex justify-center z-50">
-          <button
-            onClick={handleInstallClick}
-            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200"
-          >
-            <Download size={18} />
-            <span>Install App</span>
-          </button>
-        </div>
-      )}
     </div>
   );
 }
