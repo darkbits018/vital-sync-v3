@@ -3,7 +3,7 @@
   "short_name": "Vital Sync",
   "description": "Track your fitness, nutrition, and health goals in one place",
   "start_url": "/",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#ffffff",
   "theme_color": "#6366f1",
   "icons": [
