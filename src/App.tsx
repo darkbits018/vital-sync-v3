@@ -7,6 +7,7 @@ import { SocialView } from './components/social/SocialView';
 import { onAuthStateChanged, getCurrentUser, isNewUser } from './services/firebaseAuthService';
 import { User as FirebaseUser } from 'firebase/auth';
 import { DashboardView } from './components/dashboard/DashboardView';
+import { Download } from 'lucide-react';
 
 // Components
 import { Header } from './components/common/Header';
@@ -74,6 +75,10 @@ function App() {
     return value;
   };
 
+  // PWA installation
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showInstallButton, setShowInstallButton] = useState(false);
+
   // Firebase auth state
   const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -126,6 +131,56 @@ function App() {
   // Date filters
   const [selectedMealDate, setSelectedMealDate] = useState(new Date());
   const [selectedWorkoutDate, setSelectedWorkoutDate] = useState(new Date());
+
+  // Listen for beforeinstallprompt event
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      // Prevent the mini-infobar from appearing on mobile
+      e.preventDefault();
+      // Store the event so it can be triggered later
+      setDeferredPrompt(e);
+      // Show the install button
+      setShowInstallButton(true);
+    };
+
+    const handleAppInstalled = () => {
+      // Hide the install button when the app is installed
+      setShowInstallButton(false);
+      // Clear the deferredPrompt
+      setDeferredPrompt(null);
+      // Optionally show a message
+      addNotification('App installed successfully!', 'success');
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
+
+    return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
+    };
+  }, [addNotification]);
+
+  // Function to handle the install button click
+  const handleInstallClick = () => {
+    if (!deferredPrompt) {
+      return;
+    }
+    // Show the install prompt
+    deferredPrompt.prompt();
+    // Wait for the user to respond to the prompt
+    deferredPrompt.userChoice.then((choiceResult: { outcome: string }) => {
+      if (choiceResult.outcome === 'accepted') {
+        console.log('User accepted the install prompt');
+        addNotification('Installing app...', 'info');
+      } else {
+        console.log('User dismissed the install prompt');
+      }
+      // Clear the deferredPrompt variable as it can only be used once
+      setDeferredPrompt(null);
+      setShowInstallButton(false);
+    });
+  };
 
   // Listen for Firebase auth state changes
   useEffect(() => {
@@ -654,6 +709,19 @@ function App() {
         notifications={notifications}
         onClose={removeNotification}
       />
+
+      {/* Install App Button */}
+      {showInstallButton && (
+        <div className="fixed bottom-20 left-0 right-0 flex justify-center z-50">
+          <button
+            onClick={handleInstallClick}
+            className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg shadow-lg hover:from-purple-700 hover:to-blue-700 transition-all duration-200"
+          >
+            <Download size={18} />
+            <span>Install App</span>
+          </button>
+        </div>
+      )}
     </div>
   );
 }
